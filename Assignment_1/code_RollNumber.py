@@ -70,7 +70,7 @@ def depth_limited_search(graph, start_node, goal_node, depth_limit):
   stack.append([start_node,[start_node],0])
   result = None
   while(len(stack)>0):
-    print(stack)
+    # print(stack)
     list=stack.pop()
     node=list[0]
     path=list[1]
@@ -80,23 +80,21 @@ def depth_limited_search(graph, start_node, goal_node, depth_limit):
     if(depth>depth_limit):
       result='cutoff'
       continue
-    
+
     for n,__,_ in stack:   #check cycle
         if(n==node):
             continue
-            
+
     for i in range(len(graph.nodes[node].adjacent)):
       adj=graph.nodes[node].adjacent[i][0]
-      updated_path=path.copy()
-      updated_path.append(adj)
-      stack.append([adj,updated_path,depth+1])
+      stack.append([adj,path+[adj],depth+1])
     
   return result
   
 def get_ids_path(adj_matrix, start_node, goal_node):
   graph1 = build_graph(adj_matrix)
   for i in range(0,126):
-    print(i)
+    print("current depth:",i)
     result = depth_limited_search(graph1,start_node,goal_node,i)
     if result!='cutoff':
       return result
