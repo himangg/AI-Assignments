@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-
+import heapq
 
 class Node:
   def __init__(self,name):
@@ -137,7 +137,8 @@ def get_ids_path(adj_matrix, start_node, goal_node):
 
 def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
   graph2 = build_graph(adj_matrix)
-  # print(graph2.nodes[82].adjacent)
+  adj_matrix=adj_matrix.T
+  graph3 = build_graph(adj_matrix) #reverse graph
   queue1=[]
   queue2=[]
   queue1.append([start_node,[start_node]])
@@ -147,7 +148,7 @@ def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
   visited1[start_node]=[start_node]
   visited2[goal_node]=[goal_node]
   result=None
-  while(len(queue1)>0 and len(queue2)>0):
+  while(len(queue1)>0 or len(queue2)>0):
     if(len(queue1)>0):
       x=queue1.pop(0)
       
@@ -159,11 +160,7 @@ def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
       
       for i in range(len(graph2.nodes[x[0]].adjacent)):
         adj=graph2.nodes[x[0]].adjacent[i][0]
-        for j in visited1.keys():
-          # print('h:',j[0],adj)
-          if(j==adj):
-            continue
-        else:
+        if adj not in visited1.keys():
           queue1.append([adj,x[1]+[adj]])
           visited1[adj]=x[1]+[adj]
 
@@ -178,12 +175,9 @@ def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
           ans=y[1]+visited1[i][::-1]
           return ans[::-1]
 
-      for i in range(len(graph2.nodes[y[0]].adjacent)):
-        adj=graph2.nodes[y[0]].adjacent[i][0]
-        for j in visited2.keys():
-          if(j==adj):
-            continue
-        else:
+      for i in range(len(graph3.nodes[y[0]].adjacent)):
+        adj=graph3.nodes[y[0]].adjacent[i][0]
+        if adj not in visited2.keys():
           queue2.append([adj,y[1]+[adj]])
           visited2[adj]=y[1]+[adj]
 
@@ -220,10 +214,30 @@ def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
 #     - Start node: 4, Goal node: 12
 #     - Return: [4, 6, 27, 9, 8, 5, 97, 28, 10, 12]
 
+# def expand():
+
+def dist(node1,node2):
+  return((node1['x']-node2['x'])**2+(node1['y']-node2['y'])**2)**0.5
+
 def get_astar_search_path(adj_matrix, node_attributes, start_node, goal_node):
-
-  return []
-
+  graph3 = build_graph(adj_matrix)
+  pq=[]
+  heapq.heapify(pq)
+  heapq.heappush(pq,[0,0,start_node,[start_node]])
+  visited={}
+  while(len(pq)>0):
+    node=heapq.heappop(pq)
+    if(node[2]==goal_node):
+      return node[3]
+    if(node[2] in visited.keys() and visited[node[2]]<=node[1]):
+      continue
+    visited[node[2]]=node[1]
+    for i in range(len(graph3.nodes[node[2]].adjacent)):
+      adj=graph3.nodes[node[2]].adjacent[i][0]
+      new_cost=node[1]+graph3.nodes[node[2]].adjacent[i][1]
+      h=dist(node_attributes[start_node],node_attributes[adj])+dist(node_attributes[adj],node_attributes[goal_node])
+      heapq.heappush(pq,[new_cost+h,new_cost,adj,node[3]+[adj]])
+  return None
 
 # Algorithm: Bi-Directional Heuristic Search
 
@@ -256,7 +270,10 @@ def get_astar_search_path(adj_matrix, node_attributes, start_node, goal_node):
 #     - Return: [4, 34, 33, 11, 32, 31, 3, 5, 97, 28, 10, 12]
 
 def get_bidirectional_heuristic_search_path(adj_matrix, node_attributes, start_node, goal_node):
-
+  graph4 = build_graph(adj_matrix)
+  adj_matrix=adj_matrix.T
+  graph5 = build_graph(adj_matrix) #reverse graph
+  
   return []
 
 
@@ -287,21 +304,28 @@ if __name__ == "__main__":
   # print(sum(adj_matrix[1]))
   # start_node = int(input("Enter the start node: "))
   # end_node = int(input("Enter the end node: "))
-  start_node = 1
-  end_node = 14
+  # start_node = 1
+  # end_node = 2
 
-  # for start_node in range(125):
-  #   for end_node in range(125):
-  #     print(f'Start Node: {start_node}, End Node: {end_node}')
-  #     temp1=get_ids_path(adj_matrix,start_node,end_node)
-  #     temp2=get_bidirectional_search_path(adj_matrix,start_node,end_node)
-  #     if(temp1==None and temp2!=None):
-  #       print('incorrect')
-  #     if(temp1!=None and temp2==None):
-  #       print('incorrect')
-  
-  print(f'Iterative Deepening Search Path: {get_ids_path(adj_matrix,start_node,end_node)}')
-  print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
+  l=[]
+  for start_node in range(125):
+    for end_node in range(125):
+      print(f'Start Node: {start_node}, End Node: {end_node}')
+      temp1=get_ids_path(adj_matrix,start_node,end_node)
+      # print(temp1)
+      temp2=get_bidirectional_search_path(adj_matrix,start_node,end_node)
+      if(temp1==None and temp2!=None):
+        l.append([start_node,end_node])
+        break
+      if(temp1!=None and temp2==None):
+        l.append([start_node,end_node])
+        break
+    else:
+      print('success')
+  print('complete')
+  print(l)
+  # print(f'Iterative Deepening Search Path: {get_ids_path(adj_matrix,start_node,end_node)}')
+  # print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
   # print(f'A* Path: {get_astar_search_path(adj_matrix,node_attributes,start_node,end_node)}')
   # print(f'Bidirectional Heuristic Search Path: {get_bidirectional_heuristic_search_path(adj_matrix,node_attributes,start_node,end_node)}')
   # print(f'Bonus Problem: {bonus_problem(adj_matrix)}')
