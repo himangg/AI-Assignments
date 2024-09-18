@@ -69,26 +69,31 @@ def depth_limited_search(graph, start_node, goal_node, depth_limit):
   stack=[]
   stack.append([start_node,[start_node],0])
   result = None
+  visited=[]        #made a visited array to optimize the code
   while(len(stack)>0):
     # print(stack)
     list=stack.pop()
     node=list[0]
     path=list[1]
     depth=list[2]
-    if(node==goal_node):
-      return path
-    if(depth>depth_limit):
-      result='cutoff'
+    if(node in visited):
       continue
+    else:
+      visited.append(node)
+      if(node==goal_node):
+        return path
+      if(depth>depth_limit):
+        result='cutoff'
+        continue
 
-    for n,__,_ in stack:   #check cycle
-        if(n==node):
-            continue
+      for n,__,_ in stack:   #check cycle
+          if(n==node):
+              continue
 
-    for i in range(len(graph.nodes[node].adjacent)):
-      adj=graph.nodes[node].adjacent[i][0]
-      stack.append([adj,path+[adj],depth+1])
-    
+      for i in range(len(graph.nodes[node].adjacent)):
+        adj=graph.nodes[node].adjacent[i][0]
+        stack.append([adj,path+[adj],depth+1])
+      
   return result
   
 def get_ids_path(adj_matrix, start_node, goal_node):
