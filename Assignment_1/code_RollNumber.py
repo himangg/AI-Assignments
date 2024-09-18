@@ -38,8 +38,34 @@ import pickle
 #     - Start node: 4, Goal node: 12
 #     - Return: [4, 6, 2, 9, 8, 5, 97, 98, 12]
 
-def get_ids_path(adj_matrix, start_node, goal_node):
+class Node:
+  def __init__(self,name):
+    self.name=name
+    self.adjacent=[]
+  def add_adj(self,adj,weight):
+    self.adjacent.append([adj,weight])
 
+class Graph:
+  def __init__(self):
+    self.nodes=[]
+  def add_node(self,node):
+    self.nodes.append(node)
+    
+def build_graph(adj_matrix):
+  n=len(adj_matrix)
+  m=len(adj_matrix[0])
+  graph=Graph()
+  for i in range(n):
+    graph.add_node(Node(i))
+  for i in range(n):
+    for j in range(m):
+      if adj_matrix[i][j]!=0:
+        graph.nodes[i].add_adj(j,adj_matrix[i][j])
+  return graph
+  
+def get_ids_path(adj_matrix, start_node, goal_node):
+  graph1 = build_graph(adj_matrix)
+  print(graph1.nodes[2].adjacent)
   return []
 
 
@@ -167,15 +193,18 @@ def bonus_problem(adj_matrix):
 
 
 if __name__ == "__main__":
-  adj_matrix = np.load('IIIT_Delhi.npy')
-  with open('IIIT_Delhi.pkl', 'rb') as f:
+  adj_matrix = np.load('Assignment_1\IIIT_Delhi.npy')
+  with open('Assignment_1\IIIT_Delhi.pkl', 'rb') as f:
     node_attributes = pickle.load(f)
 
-  start_node = int(input("Enter the start node: "))
-  end_node = int(input("Enter the end node: "))
+  # print(sum(adj_matrix[1]))
+  # start_node = int(input("Enter the start node: "))
+  # end_node = int(input("Enter the end node: "))
+  start_node = 2
+  end_node = 3
 
   print(f'Iterative Deepening Search Path: {get_ids_path(adj_matrix,start_node,end_node)}')
-  print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
-  print(f'A* Path: {get_astar_search_path(adj_matrix,node_attributes,start_node,end_node)}')
-  print(f'Bidirectional Heuristic Search Path: {get_bidirectional_heuristic_search_path(adj_matrix,node_attributes,start_node,end_node)}')
-  print(f'Bonus Problem: {bonus_problem(adj_matrix)}')
+  # print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
+  # print(f'A* Path: {get_astar_search_path(adj_matrix,node_attributes,start_node,end_node)}')
+  # print(f'Bidirectional Heuristic Search Path: {get_bidirectional_heuristic_search_path(adj_matrix,node_attributes,start_node,end_node)}')
+  # print(f'Bonus Problem: {bonus_problem(adj_matrix)}')
