@@ -1,6 +1,33 @@
 import numpy as np
 import pickle
 
+
+class Node:
+  def __init__(self,name):
+    self.name=name
+    self.adjacent=[]
+  def add_adj(self,adj,weight):
+    self.adjacent.append([adj,weight])
+
+class Graph:
+  def __init__(self):
+    self.nodes=[]
+  def add_node(self,node):
+    self.nodes.append(node)
+    
+def build_graph(adj_matrix):
+  n=len(adj_matrix)
+  m=len(adj_matrix[0])
+  graph=Graph()
+  for i in range(n):
+    graph.add_node(Node(i))
+  for i in range(n):
+    for j in range(m):
+      if adj_matrix[i][j]!=0:
+        graph.nodes[i].add_adj(j,adj_matrix[i][j])
+  return graph
+
+
 # General Notes:
 # - Update the provided file name (code_<RollNumber>.py) as per the instructions.
 # - Do not change the function name, number of parameters or the sequence of parameters.
@@ -38,35 +65,42 @@ import pickle
 #     - Start node: 4, Goal node: 12
 #     - Return: [4, 6, 2, 9, 8, 5, 97, 98, 12]
 
-class Node:
-  def __init__(self,name):
-    self.name=name
-    self.adjacent=[]
-  def add_adj(self,adj,weight):
-    self.adjacent.append([adj,weight])
-
-class Graph:
-  def __init__(self):
-    self.nodes=[]
-  def add_node(self,node):
-    self.nodes.append(node)
+def depth_limited_search(graph, start_node, goal_node, depth_limit):
+  stack=[]
+  stack.append([start_node,[start_node],0])
+  result = None
+  while(len(stack)>0):
+    print(stack)
+    list=stack.pop()
+    node=list[0]
+    path=list[1]
+    depth=list[2]
+    if(node==goal_node):
+      return path
+    if(depth>depth_limit):
+      result='cutoff'
+      continue
     
-def build_graph(adj_matrix):
-  n=len(adj_matrix)
-  m=len(adj_matrix[0])
-  graph=Graph()
-  for i in range(n):
-    graph.add_node(Node(i))
-  for i in range(n):
-    for j in range(m):
-      if adj_matrix[i][j]!=0:
-        graph.nodes[i].add_adj(j,adj_matrix[i][j])
-  return graph
+    for n,__,_ in stack:   #check cycle
+        if(n==node):
+            continue
+            
+    for i in range(len(graph.nodes[node].adjacent)):
+      adj=graph.nodes[node].adjacent[i][0]
+      updated_path=path.copy()
+      updated_path.append(adj)
+      stack.append([adj,updated_path,depth+1])
+    
+  return result
   
 def get_ids_path(adj_matrix, start_node, goal_node):
   graph1 = build_graph(adj_matrix)
-  print(graph1.nodes[2].adjacent)
-  return []
+  for i in range(0,126):
+    print(i)
+    result = depth_limited_search(graph1,start_node,goal_node,i)
+    if result!='cutoff':
+      return result
+  return None
 
 
 # Algorithm: Bi-Directional Search
@@ -198,10 +232,10 @@ if __name__ == "__main__":
     node_attributes = pickle.load(f)
 
   # print(sum(adj_matrix[1]))
-  # start_node = int(input("Enter the start node: "))
-  # end_node = int(input("Enter the end node: "))
-  start_node = 2
-  end_node = 3
+  start_node = int(input("Enter the start node: "))
+  end_node = int(input("Enter the end node: "))
+  # start_node = 1
+  # end_node = 2
 
   print(f'Iterative Deepening Search Path: {get_ids_path(adj_matrix,start_node,end_node)}')
   # print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
