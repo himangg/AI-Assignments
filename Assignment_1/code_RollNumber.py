@@ -93,13 +93,13 @@ def depth_limited_search(graph, start_node, goal_node, depth_limit):
       for i in range(len(graph.nodes[node].adjacent)):
         adj=graph.nodes[node].adjacent[i][0]
         stack.append([adj,path+[adj],depth+1])
-      
+
   return result
-  
+
 def get_ids_path(adj_matrix, start_node, goal_node):
   graph1 = build_graph(adj_matrix)
   for i in range(0,126):
-    print("current depth:",i)
+    # print("current depth:",i)
     result = depth_limited_search(graph1,start_node,goal_node,i)
     if result!='cutoff':
       return result
@@ -136,8 +136,58 @@ def get_ids_path(adj_matrix, start_node, goal_node):
 #     - Return: [4, 6, 2, 9, 8, 5, 97, 98, 12]
 
 def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
+  graph2 = build_graph(adj_matrix)
+  # print(graph2.nodes[82].adjacent)
+  queue1=[]
+  queue2=[]
+  queue1.append([start_node,[start_node]])
+  queue2.append([goal_node,[goal_node]])
+  visited1={}
+  visited2={}
+  visited1[start_node]=[start_node]
+  visited2[goal_node]=[goal_node]
+  result=None
+  while(len(queue1)>0 and len(queue2)>0):
+    if(len(queue1)>0):
+      x=queue1.pop(0)
+      
+      for i in visited2.keys():
+        if(x[0]==i):
+          x[1].pop()
+          ans=x[1]+visited2[i][::-1]
+          return ans
+      
+      for i in range(len(graph2.nodes[x[0]].adjacent)):
+        adj=graph2.nodes[x[0]].adjacent[i][0]
+        for j in visited1.keys():
+          # print('h:',j[0],adj)
+          if(j==adj):
+            continue
+        else:
+          queue1.append([adj,x[1]+[adj]])
+          visited1[adj]=x[1]+[adj]
 
-  return []
+    if(len(queue2)>0):
+      y=queue2.pop(0)
+      
+      for i in visited1.keys():
+        if(y[0]==i):
+          # print('y:',y)
+          # print('i:',visited1[i])
+          y[1].pop()
+          ans=y[1]+visited1[i][::-1]
+          return ans[::-1]
+
+      for i in range(len(graph2.nodes[y[0]].adjacent)):
+        adj=graph2.nodes[y[0]].adjacent[i][0]
+        for j in visited2.keys():
+          if(j==adj):
+            continue
+        else:
+          queue2.append([adj,y[1]+[adj]])
+          visited2[adj]=y[1]+[adj]
+
+  return None
 
 
 # Algorithm: A* Search Algorithm
@@ -212,7 +262,7 @@ def get_bidirectional_heuristic_search_path(adj_matrix, node_attributes, start_n
 
 
 # Bonus Problem
- 
+
 # Input:
 # - adj_matrix: A 2D list or numpy array representing the adjacency matrix of the graph.
 
@@ -235,13 +285,23 @@ if __name__ == "__main__":
     node_attributes = pickle.load(f)
 
   # print(sum(adj_matrix[1]))
-  start_node = int(input("Enter the start node: "))
-  end_node = int(input("Enter the end node: "))
-  # start_node = 1
-  # end_node = 2
+  # start_node = int(input("Enter the start node: "))
+  # end_node = int(input("Enter the end node: "))
+  start_node = 1
+  end_node = 14
 
+  # for start_node in range(125):
+  #   for end_node in range(125):
+  #     print(f'Start Node: {start_node}, End Node: {end_node}')
+  #     temp1=get_ids_path(adj_matrix,start_node,end_node)
+  #     temp2=get_bidirectional_search_path(adj_matrix,start_node,end_node)
+  #     if(temp1==None and temp2!=None):
+  #       print('incorrect')
+  #     if(temp1!=None and temp2==None):
+  #       print('incorrect')
+  
   print(f'Iterative Deepening Search Path: {get_ids_path(adj_matrix,start_node,end_node)}')
-  # print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
+  print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
   # print(f'A* Path: {get_astar_search_path(adj_matrix,node_attributes,start_node,end_node)}')
   # print(f'Bidirectional Heuristic Search Path: {get_bidirectional_heuristic_search_path(adj_matrix,node_attributes,start_node,end_node)}')
   # print(f'Bonus Problem: {bonus_problem(adj_matrix)}')
