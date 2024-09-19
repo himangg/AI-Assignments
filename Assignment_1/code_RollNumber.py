@@ -33,7 +33,7 @@ def build_graph(adj_matrix):
 # - Do not change the function name, number of parameters or the sequence of parameters.
 # - The expected output for each function is a path (list of node names)
 # - Ensure that the returned path includes both the start node and the goal node, in the correct order.
-# - If no valid path exists between the start and goal nodes, the function should return None.
+# - If no valid path exists between the start and goal nodes, the function should return [].
 
 
 # Algorithm: Iterative Deepening Search (IDS)
@@ -45,7 +45,7 @@ def build_graph(adj_matrix):
 
 # Return:
 #   - A list of node names representing the path from the start_node to the goal_node.
-#   - If no path exists, the function should return None.
+#   - If no path exists, the function should return [].
 
 # Sample Test Cases:
 
@@ -59,7 +59,7 @@ def build_graph(adj_matrix):
 
 #   Test Case 3:
 #     - Start node: 12, Goal node: 49
-#     - Return: None
+#     - Return: []
 
 #   Test Case 4:
 #     - Start node: 4, Goal node: 12
@@ -68,8 +68,8 @@ def build_graph(adj_matrix):
 def depth_limited_search(graph, start_node, goal_node, depth_limit):
   stack=[]
   stack.append([start_node,[start_node],0])
-  result = None
-                  #made a visited array to optimize the code
+  result = []
+  visited = set()       #made a visited to optimize the code
   while(len(stack)>0):
     # print(stack)
     list=stack.pop()
@@ -78,29 +78,26 @@ def depth_limited_search(graph, start_node, goal_node, depth_limit):
     depth=list[2]
     if(node==goal_node):
       return path
-    if(depth>depth_limit):
+    if(depth>=depth_limit):
       result='cutoff'
       continue
-
-    # for n,__,_ in stack:   #check cycle
-    #     if(n==node):
-    #         continue
+    if len(graph.nodes[node].adjacent) == 0:
+      continue
 
     for i in range(len(graph.nodes[node].adjacent)):
       adj=graph.nodes[node].adjacent[i][0]
       if adj not in path:
         stack.append([adj, path + [adj], depth + 1])
-
   return result
 
 def get_ids_path(adj_matrix, start_node, goal_node):
   graph1 = build_graph(adj_matrix)
-  for i in range(0,126):
+  for i in range(0,33):
     # print("current depth:",i)
     result = depth_limited_search(graph1,start_node,goal_node,i)
     if result!='cutoff':
       return result
-  return None
+  return []
 
 
 # Algorithm: Bi-Directional Search
@@ -112,7 +109,7 @@ def get_ids_path(adj_matrix, start_node, goal_node):
 
 # Return:
 #   - A list of node names representing the path from the start_node to the goal_node.
-#   - If no path exists, the function should return None.
+#   - If no path exists, the function should return [].
 
 # Sample Test Cases:
 
@@ -126,7 +123,7 @@ def get_ids_path(adj_matrix, start_node, goal_node):
 
 #   Test Case 3:
 #     - Start node: 12, Goal node: 49
-#     - Return: None
+#     - Return: []
 
 #   Test Case 4:
 #     - Start node: 4, Goal node: 12
@@ -144,7 +141,7 @@ def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
   visited2={}
   visited1[start_node]=[start_node]
   visited2[goal_node]=[goal_node]
-  result=None
+  result=[]
   while(len(queue1)>0 or len(queue2)>0):
     if(len(queue1)>0):
       x=queue1.pop(0)
@@ -178,7 +175,7 @@ def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
           queue2.append([adj,y[1]+[adj]])
           visited2[adj]=y[1]+[adj]
 
-  return None
+  return []
 
 
 # Algorithm: A* Search Algorithm
@@ -191,7 +188,7 @@ def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
 
 # Return:
 #   - A list of node names representing the path from the start_node to the goal_node.
-#   - If no path exists, the function should return None.
+#   - If no path exists, the function should return [].
 
 # Sample Test Cases:
 
@@ -205,7 +202,7 @@ def get_bidirectional_search_path(adj_matrix, start_node, goal_node):
 
 #   Test Case 3:
 #     - Start node: 12, Goal node: 49
-#     - Return: None
+#     - Return: []
 
 #   Test Case 4:
 #     - Start node: 4, Goal node: 12
@@ -234,7 +231,7 @@ def get_astar_search_path(adj_matrix, node_attributes, start_node, goal_node):
       new_cost=node[1]+graph3.nodes[node[2]].adjacent[i][1]
       h=dist(node_attributes[start_node],node_attributes[adj])+dist(node_attributes[adj],node_attributes[goal_node])
       heapq.heappush(pq,[new_cost+h,new_cost,adj,node[3]+[adj]])
-  return None
+  return []
 
 # Algorithm: Bi-Directional Heuristic Search
 
@@ -246,7 +243,7 @@ def get_astar_search_path(adj_matrix, node_attributes, start_node, goal_node):
 
 # Return:
 #   - A list of node names representing the path from the start_node to the goal_node.
-#   - If no path exists, the function should return None.
+#   - If no path exists, the function should return [].
 
 # Sample Test Cases:
 
@@ -260,7 +257,7 @@ def get_astar_search_path(adj_matrix, node_attributes, start_node, goal_node):
 
 #   Test Case 3:
 #     - Start node: 12, Goal node: 49
-#     - Return: None
+#     - Return: []
 
 #   Test Case 4:
 #     - Start node: 4, Goal node: 12
@@ -282,7 +279,7 @@ def get_bidirectional_heuristic_search_path(adj_matrix, node_attributes, start_n
   forward_visited={}
   backward_visited={}
   
-  meeting_node=None
+  meeting_node=[]
   meeting_cost=float('inf')
   
   while forward_pq and backward_pq:
@@ -336,7 +333,7 @@ def get_bidirectional_heuristic_search_path(adj_matrix, node_attributes, start_n
     
     if meeting_node:
       return forward_path + backward_path[::-1][1:]
-  return None
+  return []
 
 
 
@@ -347,16 +344,43 @@ def get_bidirectional_heuristic_search_path(adj_matrix, node_attributes, start_n
 
 # Return:
 # - A list of tuples where each tuple (u, v) represents an edge between nodes u and v.
-#   These are the vulnerable roads whose removal would disconnect parts of the graph.
+#   These are the vulnerable roads whose removal would first_foundonnect parts of the graph.
 
 # Note:
 # - The graph is undirected, so if an edge (u, v) is vulnerable, then (v, u) should not be repeated in the output list.
 # - If the input graph has no vulnerable roads, return an empty list [].
 
+def dfs(start,parent,graph,visited,first_found,farthest_node,ans,time):
+  visited[start]=True
+  first_found[start] = farthest_node[start] = time[0]
+  time[0]+=1
+  
+  for i in range(len(graph.nodes[start].adjacent)):
+    adj=graph.nodes[start].adjacent[i][0]
+    if visited[adj]==False:
+      dfs(adj,start,graph,visited,first_found,farthest_node,ans,time)
+      farthest_node[start]=min(farthest_node[start],farthest_node[adj])
+      
+      if(farthest_node[adj]>first_found[start]):
+        ans.append((start,adj))
+        
+    elif adj!=parent:
+      farthest_node[start]=min(farthest_node[start],first_found[adj])
+
 def bonus_problem(adj_matrix):
+  graph6 = build_graph(adj_matrix)
+  
+  visited=[False]*125
+  first_found=[-1]*125
+  farthest_node=[-1]*125
+  ans=[]
+  time=[0]
+  
+  for i in range(125):
+    if visited[i]==False:
+      dfs(i,-1,graph6,visited,first_found,farthest_node,ans,time)
 
-  return []
-
+  return ans
 
 if __name__ == "__main__":
   adj_matrix = np.load('Assignment_1\IIIT_Delhi.npy')
@@ -376,10 +400,10 @@ if __name__ == "__main__":
   #     temp1=get_ids_path(adj_matrix,start_node,end_node)
   #     # print(temp1)
   #     temp2=get_bidirectional_heuristic_search_path(adj_matrix,node_attributes,start_node,end_node)
-  #     if(temp1==None and temp2!=None):
+  #     if(temp1==[] and temp2!=[]):
   #       l.append([start_node,end_node])
   #       break
-  #     if(temp1!=None and temp2==None):
+  #     if(temp1!=[] and temp2==[]):
   #       l.append([start_node,end_node])
   #       break
   #   else:
@@ -392,4 +416,4 @@ if __name__ == "__main__":
   print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
   print(f'A* Path: {get_astar_search_path(adj_matrix,node_attributes,start_node,end_node)}')
   print(f'Bidirectional Heuristic Search Path: {get_bidirectional_heuristic_search_path(adj_matrix,node_attributes,start_node,end_node)}')
-  # print(f'Bonus Problem: {bonus_problem(adj_matrix)}')
+  print(f'Bonus Problem: {bonus_problem(adj_matrix)}')
