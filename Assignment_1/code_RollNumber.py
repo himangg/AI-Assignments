@@ -69,30 +69,26 @@ def depth_limited_search(graph, start_node, goal_node, depth_limit):
   stack=[]
   stack.append([start_node,[start_node],0])
   result = None
-  visited=[]        #made a visited array to optimize the code
+                  #made a visited array to optimize the code
   while(len(stack)>0):
     # print(stack)
     list=stack.pop()
     node=list[0]
     path=list[1]
     depth=list[2]
-    if(node in visited):
+    if(node==goal_node):
+      return path
+    if(depth>depth_limit):
+      result='cutoff'
       continue
-    else:
-      visited.append(node)
-      if(node==goal_node):
-        return path
-      if(depth>depth_limit):
-        result='cutoff'
-        continue
 
-      for n,__,_ in stack:   #check cycle
-          if(n==node):
-              continue
+    for n,__,_ in stack:   #check cycle
+        if(n==node):
+            continue
 
-      for i in range(len(graph.nodes[node].adjacent)):
-        adj=graph.nodes[node].adjacent[i][0]
-        stack.append([adj,path+[adj],depth+1])
+    for i in range(len(graph.nodes[node].adjacent)):
+      adj=graph.nodes[node].adjacent[i][0]
+      stack.append([adj,path+[adj],depth+1])
 
   return result
 
@@ -274,7 +270,72 @@ def get_bidirectional_heuristic_search_path(adj_matrix, node_attributes, start_n
   adj_matrix=adj_matrix.T
   graph5 = build_graph(adj_matrix) #reverse graph
   
-  return []
+  forward_pq=[]
+  backward_pq=[]
+  heapq.heapify(forward_pq)
+  heapq.heapify(backward_pq)
+  
+  heapq.heappush(forward_pq,[0,0,start_node,[start_node]])
+  heapq.heappush(backward_pq,[0,0,goal_node,[goal_node]])
+  
+  forward_visited={}
+  backward_visited={}
+  
+  meeting_node=None
+  meeting_cost=float('inf')
+  
+  while forward_pq and backward_pq:
+    if(len(forward_pq)>0):
+      forward_node=heapq.heappop(forward_pq)
+      current_forward = forward_node[2]
+      current_forward_cost = forward_node[1]
+      forward_path = forward_node[3]
+      
+      if(current_forward in backward_visited.keys()):
+        total_cost = current_forward_cost + backward_visited[current_forward]
+        if(total_cost < meeting_cost):
+          min_total_cost = total_cost
+          meeting_node = current_forward
+          final_forward_path = forward_path
+          final_backward_path = backward_visited[current_forward]
+          
+      if current_forward in forward_visited and forward_visited[current_forward] <= current_forward_cost:
+        continue
+      forward_visited[current_forward] = current_forward_cost  
+      
+      for i in range(len(graph4.nodes[current_forward].adjacent)):
+        adj = graph4.nodes[current_forward].adjacent[i][0]
+        new_cost = current_forward_cost + graph4.nodes[current_forward].adjacent[i][1]
+        h = dist(node_attributes[start_node], node_attributes[adj]) + dist(node_attributes[adj], node_attributes[goal_node])
+        heapq.heappush(forward_pq, [new_cost + h, new_cost, adj, forward_path + [adj]])
+        
+    if(len(backward_pq)>0):
+      backward_node = heapq.heappop(backward_pq)
+      current_backward = backward_node[2]
+      current_backward_cost = backward_node[1]
+      backward_path = backward_node[3]
+      
+      if current_backward in forward_visited:
+        total_cost = current_backward_cost + forward_visited[current_backward]
+        if total_cost < meeting_cost:
+          min_total_cost = total_cost
+          meeting_node = current_backward
+          final_forward_path = forward_visited[current_backward]
+          final_backward_path = backward_path
+      
+      if current_backward in backward_visited and backward_visited[current_backward] <= current_backward_cost:
+        continue
+      backward_visited[current_backward] = current_backward_cost
+      
+      for i in range(len(graph5.nodes[current_backward].adjacent)):
+        adj = graph5.nodes[current_backward].adjacent[i][0]
+        new_cost = current_backward_cost + graph5.nodes[current_backward].adjacent[i][1]
+        h = dist(node_attributes[goal_node], node_attributes[adj]) + dist(node_attributes[adj], node_attributes[start_node])
+        heapq.heappush(backward_pq, [new_cost + h, new_cost, adj, backward_path + [adj]])
+    
+    if meeting_node:
+      return forward_path + backward_path[::-1][1:]
+  return None
 
 
 
@@ -302,30 +363,32 @@ if __name__ == "__main__":
     node_attributes = pickle.load(f)
 
   # print(sum(adj_matrix[1]))
-  # start_node = int(input("Enter the start node: "))
-  # end_node = int(input("Enter the end node: "))
+  start_node = int(input("Enter the start node: "))
+  end_node = int(input("Enter the end node: "))
   # start_node = 1
   # end_node = 2
 
-  l=[]
-  for start_node in range(125):
-    for end_node in range(125):
-      print(f'Start Node: {start_node}, End Node: {end_node}')
-      temp1=get_ids_path(adj_matrix,start_node,end_node)
-      # print(temp1)
-      temp2=get_bidirectional_search_path(adj_matrix,start_node,end_node)
-      if(temp1==None and temp2!=None):
-        l.append([start_node,end_node])
-        break
-      if(temp1!=None and temp2==None):
-        l.append([start_node,end_node])
-        break
-    else:
-      print('success')
-  print('complete')
-  print(l)
-  # print(f'Iterative Deepening Search Path: {get_ids_path(adj_matrix,start_node,end_node)}')
-  # print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
-  # print(f'A* Path: {get_astar_search_path(adj_matrix,node_attributes,start_node,end_node)}')
-  # print(f'Bidirectional Heuristic Search Path: {get_bidirectional_heuristic_search_path(adj_matrix,node_attributes,start_node,end_node)}')
+  # l=[]
+  # for start_node in range(125):
+  #   for end_node in range(125):
+  #     print(f'Start Node: {start_node}, End Node: {end_node}')
+  #     temp1=get_ids_path(adj_matrix,start_node,end_node)
+  #     # print(temp1)
+  #     temp2=get_bidirectional_heuristic_search_path(adj_matrix,node_attributes,start_node,end_node)
+  #     if(temp1==None and temp2!=None):
+  #       l.append([start_node,end_node])
+  #       break
+  #     if(temp1!=None and temp2==None):
+  #       l.append([start_node,end_node])
+  #       break
+  #   else:
+  #     print('success')
+  # print('complete')
+  # print(l)
+  
+  
+  print(f'Iterative Deepening Search Path: {get_ids_path(adj_matrix,start_node,end_node)}')
+  print(f'Bidirectional Search Path: {get_bidirectional_search_path(adj_matrix,start_node,end_node)}')
+  print(f'A* Path: {get_astar_search_path(adj_matrix,node_attributes,start_node,end_node)}')
+  print(f'Bidirectional Heuristic Search Path: {get_bidirectional_heuristic_search_path(adj_matrix,node_attributes,start_node,end_node)}')
   # print(f'Bonus Problem: {bonus_problem(adj_matrix)}')
