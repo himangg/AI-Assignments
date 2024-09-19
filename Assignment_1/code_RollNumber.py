@@ -82,13 +82,14 @@ def depth_limited_search(graph, start_node, goal_node, depth_limit):
       result='cutoff'
       continue
 
-    for n,__,_ in stack:   #check cycle
-        if(n==node):
-            continue
+    # for n,__,_ in stack:   #check cycle
+    #     if(n==node):
+    #         continue
 
     for i in range(len(graph.nodes[node].adjacent)):
       adj=graph.nodes[node].adjacent[i][0]
-      stack.append([adj,path+[adj],depth+1])
+      if adj not in path:
+        stack.append([adj, path + [adj], depth + 1])
 
   return result
 
