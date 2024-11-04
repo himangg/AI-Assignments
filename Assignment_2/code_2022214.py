@@ -66,7 +66,6 @@ def create_kb():
     # Map route_id to a list of stops in order of their sequence
     for i in range(len(df_stop_times)):
         route_to_stops[trip_to_route[df_stop_times['trip_id'][i]]].append(df_stop_times['stop_id'][i])
-    # print(route_to_stops)
     
     # Ensure each route only has unique stops
     for route in route_to_stops:
@@ -77,7 +76,6 @@ def create_kb():
         stop_trip_count[df_stop_times['stop_id'][i]]+=1
 
     # Create fare rules for routes
-    
 
     # Merge fare rules and attributes into a single DataFrame
     
@@ -273,6 +271,8 @@ def direct_route_brute_force(start_stop, end_stop):
     pass  # Implementation here
 # print(direct_route_brute_force(1, 2))
 
+pyDatalog.create_terms('RouteHasStop, DirectRoute, OptimalRoute, X, Y, Z, R, R1, R2')  
+
 # Adding route data to Datalog  
 def add_route_data(route_to_stops):
     """
@@ -283,14 +283,13 @@ def add_route_data(route_to_stops):
         None
     """
     for i in route_to_stops.items():
-        route = i[0]
+        route = int(i[0])
         stops = i[1]
         for j in stops:
-            RouteHasStop(route, j)
-    pass  # Implementation here
+            +RouteHasStop(route, int(j))
+    # pass  # Implementation here
 
 # Initialize Datalog predicates for reasoning
-pyDatalog.create_terms('RouteHasStop, DirectRoute, OptimalRoute, X, Y, Z, R, R1, R2')  
 def initialize_datalog():
     """
     Initialize Datalog terms and predicates for reasoning about routes and stops.
@@ -303,11 +302,12 @@ def initialize_datalog():
 
     # Define Datalog predicates
     DirectRoute(X, Y, R) <= (RouteHasStop(R, X) & RouteHasStop(R, Y) & (X != Y))
-    OptimalRoute(X, Y, Z, R1, R2) <= (DirectRoute(X, Z, R1) & DirectRoute(Z, Y, R2) & (R1 != R2))
+    # OptimalRoute(X, Y, Z, R1, R2) <= (DirectRoute(X, Z, R1) & DirectRoute(Z, Y, R2) & (R1 != R2))
 
     create_kb()  # Populate the knowledge base
     add_route_data(route_to_stops)  # Add route data to Datalog    
-initialize_datalog()
+
+# initialize_datalog()
 
 # Function to query direct routes between two stops
 def query_direct_routes(start, end):
@@ -322,13 +322,17 @@ def query_direct_routes(start, end):
         list: A sorted list of route IDs (str) connecting the two stops.
     """
     
-    ans = []
-    for i in DirectRoute(start, end, R):
-        print(i)
+    ans = []    
+    result = (RouteHasStop(R, start) & RouteHasStop(R, end))
+    # print(result)
+    for i in result:
+        ans.append(i[0])
         # ans.append(R)
-    return sorted(ans)
-    pass  # Implementation here
-print(query_direct_routes(1, 2))
+    return reversed(sorted(ans))
+    # pass  # Implementation here
+
+# print(query_direct_routes(2573, 1177))
+
 
 # Forward chaining for optimal route planning
 def forward_chaining(start_stop_id, end_stop_id, stop_id_to_include, max_transfers):

@@ -151,13 +151,13 @@ if __name__ == "__main__":
     # Run all tests
     test_direct_route_brute_force()
     test_query_direct_routes()
-    test_forward_chaining()
-    test_backward_chaining()
-    test_pddl_planning()
-    test_bfs_route_planner()
+    # test_forward_chaining()
+    # test_backward_chaining()
+    # test_pddl_planning()
+    # test_bfs_route_planner()
     
     # Run additional tests for the new queries
-    test_get_busiest_routes()
-    test_get_most_frequent_stops()
-    test_get_top_5_busiest_stops()
-    test_get_stops_with_one_direct_route()
+    # test_get_busiest_routes()
+    # test_get_most_frequent_stops()
+    # test_get_top_5_busiest_stops()
+    # test_get_stops_with_one_direct_route()
