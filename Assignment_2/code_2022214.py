@@ -29,8 +29,6 @@ df_fare_attributes = pd.read_csv('GTFS/fare_attributes.txt')
 df_trips = pd.read_csv('GTFS/trips.txt')
 df_fare_rules = pd.read_csv('GTFS/fare_rules.txt')
 
-
-
 # ------------------ Function Definitions ------------------
 
 # Function to create knowledge base from the loaded data
@@ -42,26 +40,11 @@ def create_kb():
     Returns:
         None
     """
-    # print(df_stops.head())
-    # print(df_stops)
     global route_to_stops, trip_to_route, stop_trip_count, fare_rules, merged_fare_df
-    
+
     # Create trip_id to route_id mapping
     for i in range(len(df_trips)):
         trip_to_route[df_trips['trip_id'][i]] = df_trips['route_id'][i]
-        
-    
-    # for i in range(len(df_trips)):
-    #     tripId = df_trips['trip_id'][i]
-    #     routeId = df_trips['route_id'][i]
-        
-    #     if(tripId not in trip_to_route):
-    #         trip_to_route[tripId] = []
-            
-    #     trip_to_route[tripId].append(routeId)
-        
-    #     if( len(trip_to_route[tripId]) > 1):
-    #         print("Error: More than one route for a trip")
         
     # Map route_id to a list of stops in order of their sequence
     for i in range(len(df_stop_times)):
@@ -76,10 +59,12 @@ def create_kb():
         stop_trip_count[df_stop_times['stop_id'][i]]+=1
 
     # Create fare rules for routes
+    for i in range(len(df_fare_rules)):
+        fare_rules[df_fare_rules['route_id'][i]] = df_fare_rules['fare_id'][i]
 
-    # Merge fare rules and attributes into a single DataFrame
+    # Merge fare rules and attributes into a single DataFrame\
+    merged_fare_df = pd.merge(df_fare_rules, df_fare_attributes, on='fare_id', how='inner')
     
-# create_kb()
 
 # Function to find the top 5 busiest routes based on the number of trips
 def get_busiest_routes():
@@ -105,9 +90,6 @@ def get_busiest_routes():
     for i in range(5):
         ans.append((sorted_dict[i][0], sorted_dict[i][1]))
     return ans
-    pass  # Implementation here
-    
-# print(get_busiest_routes())
 
 # Function to find the top 5 stops with the most frequent trips
 def get_most_frequent_stops():
@@ -126,9 +108,6 @@ def get_most_frequent_stops():
     for i in range(5):
         ans.append((sorted_dict[i][0], sorted_dict[i][1]))
     return ans
-    pass  # Implementation here
-
-# print(get_most_frequent_stops())
 
 # Function to find the top 5 busiest stops based on the number of routes passing through them
 def get_top_5_busiest_stops():
@@ -154,9 +133,6 @@ def get_top_5_busiest_stops():
     for i in range(5):
         ans.append((sorted_dict[i][0], sorted_dict[i][1]))
     return ans
-    pass  # Implementation here
-# print(get_top_5_busiest_stops())
-
 
 # Function to identify the top 5 pairs of stops with only one direct route between them
 def get_stops_with_one_direct_route():
@@ -169,17 +145,7 @@ def get_stops_with_one_direct_route():
               - pair (tuple): A tuple with two stop IDs (stop_1, stop_2).
               - route_id (int): The ID of the route connecting the two stops.
     """
-    ans=[]
-    consecutive_stops = []
-    for i in route_to_stops.items():
-        stops = i[1]
-        for j in range(len(stops)-1):
-            consecutive_stops.append((stops[j], stops[j+1], i[0]))
-    
-    
-    return ans
     pass  # Implementation here
-# print(get_stops_with_one_direct_route())
 
 # Function to get merged fare DataFrame
 # No need to change this function
@@ -204,16 +170,12 @@ def visualize_stop_route_graph_interactive(route_to_stops):
     Returns:
         None
     """
-    
-    # Create a directed graph
     G = nx.DiGraph()
     
-    # Add edges between stops based on routes
     for route, stops in route_to_stops.items():
         for i in range(len(stops) - 1):
             G.add_edge(stops[i], stops[i + 1], route=route)
     
-    # Create edge trace
     edge_x = []
     edge_y = []
     for edge in G.edges():
@@ -226,7 +188,6 @@ def visualize_stop_route_graph_interactive(route_to_stops):
         edge_y.append(y1)
         edge_y.append(None)
     
-    # Create node trace
     node_x = []
     node_y = []
     for node in G.nodes():
@@ -234,17 +195,13 @@ def visualize_stop_route_graph_interactive(route_to_stops):
         node_x.append(x)
         node_y.append(y)
     
-    # Create figure
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode='lines', line=dict(width=0.5, color='black'), hoverinfo='none'))
-    fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='markers', marker=dict(size=5, color='blue'), hoverinfo='text'))
+    fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode='lines', line=dict(width=0.1, color='black'), hoverinfo='none'))
+    fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='markers', marker=dict(size=1, color='blue'), hoverinfo='text'))
     
     # Update layout
     fig.update_layout(title='Stop-Route Graph', showlegend=False, hovermode='closest')
     fig.show()
-    
-    pass  # Implementation here
-# visualize_stop_route_graph_interactive(route_to_stops)
 
 # Brute-Force Approach for finding direct routes
 def direct_route_brute_force(start_stop, end_stop):
@@ -258,7 +215,6 @@ def direct_route_brute_force(start_stop, end_stop):
     Returns:
         list: A list of route IDs (int) that connect the two stops directly.
     """
-    
     ans = []
     for i in route_to_stops.items():
         stops = i[1]
@@ -267,18 +223,33 @@ def direct_route_brute_force(start_stop, end_stop):
             
     return ans
 
-    
-    pass  # Implementation here
-# print(direct_route_brute_force(1, 2))
-
+# Initialize Datalog predicates for reasoning
 pyDatalog.create_terms('RouteHasStop, DirectRoute, OptimalRoute, X, Y, Z, R, R1, R2')  
+def initialize_datalog():
+    """
+    Initialize Datalog terms and predicates for reasoning about routes and stops.
 
-# Adding route data to Datalog  
+    Returns:
+        None
+    """
+    pyDatalog.clear()  # Clear previous terms
+    print("Terms initialized: DirectRoute, RouteHasStop, OptimalRoute")  # Confirmation print
+
+    # Define Datalog predicates
+    DirectRoute(X, Y, R) <= (RouteHasStop(R, X) & RouteHasStop(R, Y))
+    OptimalRoute(X, Y, Z, R1, R2) <= (DirectRoute(X, Z, R1) & DirectRoute(Z, Y, R2))
+
+    create_kb()  # Populate the knowledge base
+    add_route_data(route_to_stops)  # Add route data to Datalog
+    
+# Adding route data to Datalog
 def add_route_data(route_to_stops):
     """
     Add the route data to Datalog for reasoning.
+
     Args:
         route_to_stops (dict): A dictionary mapping route IDs to lists of stops.
+
     Returns:
         None
     """
@@ -287,27 +258,6 @@ def add_route_data(route_to_stops):
         stops = i[1]
         for j in stops:
             +RouteHasStop(route, int(j))
-    # pass  # Implementation here
-
-# Initialize Datalog predicates for reasoning
-def initialize_datalog():
-    """
-    Initialize Datalog terms and predicates for reasoning about routes and stops.
-
-    Returns:
-        None
-    """
-    pyDatalog.clear()  # Clear previous terms  
-    print("Terms initialized: DirectRoute, RouteHasStop, OptimalRoute")  # Confirmation print
-
-    # Define Datalog predicates
-    DirectRoute(X, Y, R) <= (RouteHasStop(R, X) & RouteHasStop(R, Y) & (X != Y))
-    # OptimalRoute(X, Y, Z, R1, R2) <= (DirectRoute(X, Z, R1) & DirectRoute(Z, Y, R2) & (R1 != R2))
-
-    create_kb()  # Populate the knowledge base
-    add_route_data(route_to_stops)  # Add route data to Datalog    
-
-# initialize_datalog()
 
 # Function to query direct routes between two stops
 def query_direct_routes(start, end):
@@ -321,24 +271,18 @@ def query_direct_routes(start, end):
     Returns:
         list: A sorted list of route IDs (str) connecting the two stops.
     """
-    
     ans = []    
-    result = (RouteHasStop(R, start) & RouteHasStop(R, end))
+    result = DirectRoute(start,end,R)
     # print(result)
     for i in result:
         ans.append(i[0])
         # ans.append(R)
-    return reversed(sorted(ans))
-    # pass  # Implementation here
-
-# print(query_direct_routes(2573, 1177))
-
+    return sorted(ans)
 
 # Forward chaining for optimal route planning
 def forward_chaining(start_stop_id, end_stop_id, stop_id_to_include, max_transfers):
     """
     Perform forward chaining to find optimal routes considering transfers.
-    
 
     Args:
         start_stop_id (int): The starting stop ID.
@@ -352,11 +296,11 @@ def forward_chaining(start_stop_id, end_stop_id, stop_id_to_include, max_transfe
               - stop_id (int): The ID of the intermediate stop.
               - route_id2 (int): The ID of the second route.
     """
-    
-
-    
-    pass  # Implementation here
-
+    ans = []
+    result = (OptimalRoute(start_stop_id, end_stop_id, stop_id_to_include, R1, R2))
+    for i in result:
+        ans.append((i[0], stop_id_to_include, i[1]))
+    return ans
 
 # Backward chaining for optimal route planning
 def backward_chaining(start_stop_id, end_stop_id, stop_id_to_include, max_transfers):
@@ -375,8 +319,13 @@ def backward_chaining(start_stop_id, end_stop_id, stop_id_to_include, max_transf
               - stop_id (int): The ID of the intermediate stop.
               - route_id2 (int): The ID of the second route.
     """
-    pass  # Implementation here
+    ans = []
+    result = (OptimalRoute(end_stop_id, start_stop_id, stop_id_to_include, R1, R2))
+    for i in result:
+        ans.append((i[0], stop_id_to_include, i[1]))
+    return ans
 
+pyDatalog.create_terms('Board_a_Route, Transfer_between_Routes')
 # PDDL-style planning for route finding
 def pddl_planning(start_stop_id, end_stop_id, stop_id_to_include, max_transfers):
     """
@@ -394,7 +343,17 @@ def pddl_planning(start_stop_id, end_stop_id, stop_id_to_include, max_transfers)
               - stop_id (int): The ID of the intermediate stop.
               - route_id2 (int): The ID of the second route.
     """
-    pass  # Implementation here
+    pyDatalog.clear()  # Clear previous terms
+
+    Board_a_Route(X, R) <= (RouteHasStop(R, X))
+    Transfer_between_Routes(Z,R1,R2) <= (RouteHasStop(R1, Z) & RouteHasStop(R2, Z))
+    add_route_data(route_to_stops)  # Add route data to Datalog
+
+    ans = []
+    result = (Board_a_Route(start_stop_id, R1) & Transfer_between_Routes(stop_id_to_include, R1, R2) & Board_a_Route(end_stop_id, R2))
+    for i in result:
+        ans.append((i[0], stop_id_to_include, i[1]))
+    return ans
 
 # Function to filter fare data based on an initial fare limit
 def prune_data(merged_fare_df, initial_fare):
@@ -449,5 +408,3 @@ def bfs_route_planner_optimized(start_stop_id, end_stop_id, initial_fare, route_
               ]
     """
     pass  # Implementation here
-
-

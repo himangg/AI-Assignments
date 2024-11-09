@@ -1,4 +1,5 @@
 # Import necessary functions from code_changeRollNumber.py
+
 from collections import defaultdict
 
 route_to_stops = defaultdict(list)  # Maps route_id to an ordered list of stop_ids
@@ -6,7 +7,7 @@ trip_to_route = {}  # Maps trip_id to route_id
 stop_trip_count = defaultdict(int)  # Maps stop_id to count of trips stopping there
 fare_rules = {}  # Maps route_id to fare information
 
-from code_2022214 import (
+from Assignment_2.code_2022214 import (
     direct_route_brute_force,
     query_direct_routes,
     forward_chaining,
@@ -56,16 +57,17 @@ test_inputs = {
 
     ### NOTE: The below values are just dummy values, the actual values are might differ! 
     "busiest_routes": [
-        [(5721, 318), (5722, 318), (674, 313), (593, 311), (5254, 272)]
+        [(123, 456), (789, 234), (567, 235), (3456, 897), (345, 345)]
     ],
     "most_frequent_stops": [
-        [(10225, 8230), (10221, 8098), (149, 7996), (488, 7992), (233, 7574)]
+        [(456, 456), (234, 765), (234, 765), (234, 657765), (3252, 35634)]
     ],
     "busiest_stops": [
-        [(488, 102), (10225, 101), (149, 99), (233, 95), (10221, 86)]
+        [(432243, 14543), (454235, 2452), (2452, 2454), (78568, 24352), (42352, 24532)]
     ],
     "stops_with_one_direct_route": [
-        [((24527, 676), 542), ((243535, 8768), 2456), ((43262, 564), 65437),((256, 56), 245), ((266, 256), 78)]
+        [((24527, 676), 542), ((243535, 8768), 2456), ((43262, 564), 65437),
+         ((256, 56), 245), ((266, 256), 78)]
     ]
 }
 
@@ -151,13 +153,13 @@ if __name__ == "__main__":
     # Run all tests
     test_direct_route_brute_force()
     test_query_direct_routes()
-    # test_forward_chaining()
-    # test_backward_chaining()
-    # test_pddl_planning()
-    # test_bfs_route_planner()
+    test_forward_chaining()
+    test_backward_chaining()
+    test_pddl_planning()
+    test_bfs_route_planner()
     
     # Run additional tests for the new queries
-    # test_get_busiest_routes()
-    # test_get_most_frequent_stops()
-    # test_get_top_5_busiest_stops()
-    # test_get_stops_with_one_direct_route()
+    test_get_busiest_routes()
+    test_get_most_frequent_stops()
+    test_get_top_5_busiest_stops()
+    test_get_stops_with_one_direct_route()
