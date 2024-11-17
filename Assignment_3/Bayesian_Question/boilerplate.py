@@ -17,7 +17,7 @@ def load_data():
     # Implement code to load CSV files into DataFrames
     # Example: train_data = pd.read_csv("train_data.csv")
     train_df = pd.read_csv("train_data.csv")
-    # train_df = train_df[:200]
+    # train_df = train_df[:1000]
     # print(train_df)
     val_df = pd.read_csv("validation_data.csv")
     return train_df, val_df
@@ -76,9 +76,10 @@ def make_pruned_network(df):
 def make_optimized_network(df):
     """Perform structure optimization and fit the optimized Bayesian Network."""
     # Code to optimize the structure, fit it, and return the optimized model
-    optimized = bn.structure_learning.fit(df, methodtype='hc', scoretype='bic')
+    optimized = bn.structure_learning.fit(df, methodtype='hc')
     # print(optimized)
-    return optimized['model_edges']
+    bn.plot(optimized)
+    return optimized
 
 def save_model(fname, model):
     """Save the model to a file using pickle."""
