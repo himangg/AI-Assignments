@@ -85,7 +85,7 @@ def simulate_roomba(T, movement_policy,sigma):
 def emission_probability(state, observation,sigma):
     """
     Calculate the emission probability in log form for a given state and observation using a Gaussian distribution.
-
+    
     Parameters:
     - state (tuple): The current state represented as (position, heading), 
                      where position is a tuple of (x, y) coordinates.

@@ -17,7 +17,7 @@ def load_data():
     # Implement code to load CSV files into DataFrames
     # Example: train_data = pd.read_csv("train_data.csv")
     train_df = pd.read_csv("train_data.csv")
-    # train_df = train_df[:1000]
+    train_df = train_df[:1000]
     # print(train_df)
     val_df = pd.read_csv("validation_data.csv")
     return train_df, val_df
@@ -76,10 +76,11 @@ def make_pruned_network(df):
 def make_optimized_network(df):
     """Perform structure optimization and fit the optimized Bayesian Network."""
     # Code to optimize the structure, fit it, and return the optimized model
-    optimized = bn.structure_learning.fit(df, methodtype='hc')
-    # print(optimized)
-    bn.plot(optimized)
-    return optimized
+    graph = bn.structure_learning.fit(df)
+    bn.plot(graph)
+    model = bn.parameter_learning.fit(graph, df)
+    bn.plot(model)
+    return model
 
 def save_model(fname, model):
     """Save the model to a file using pickle."""
@@ -106,23 +107,23 @@ def main():
     # print(val_df.head())
 
     # Create and save base model
-    # base_model = make_network(train_df)
-    # save_model("base_model.pkl", base_model)
+    base_model = make_network(train_df)
+    save_model("base_model.pkl", base_model)
 
-    # # Create and save pruned model
-    # pruned_network = make_pruned_network(train_df)
-    # save_model("pruned_model.pkl", pruned_network)
+    # Create and save pruned model
+    pruned_network = make_pruned_network(train_df)
+    save_model("pruned_model.pkl", pruned_network)
 
-    # # Create and save optimized model
-    # optimized_network = make_optimized_network(train_df)
-    # save_model("optimized_model.pkl", optimized_network)
+    # Create and save optimized model
+    optimized_network = make_optimized_network(train_df)
+    save_model("optimized_model.pkl", optimized_network)
 
     # Evaluate all models on the validation set
-    # evaluate("base_model", val_df)
-    # evaluate("pruned_model", val_df)
+    evaluate("base_model", val_df)
+    evaluate("pruned_model", val_df)
     evaluate("optimized_model", val_df)
 
-    # print("[+] Done")
+    print("[+] Done")
 
 if __name__ == "__main__":
     main()
